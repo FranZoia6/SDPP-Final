@@ -262,7 +262,7 @@ int main(int argc, char *argv[]) {
     
     // Arreglos de entrada y salida
     BYTE *in = (BYTE*)input_message;
-    BYTE out[MD5_BLOCK_SIZE * n_batch]; // Espacio para el hash MD5
+    BYTE out[MD5_BLOCK_SIZE * 1]; // Espacio para el hash MD5
 
     // Llamar a la función
     mcm_cuda_md5_hash_batch(in, inlen, out, n_batch);
