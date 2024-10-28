@@ -1,4 +1,6 @@
-global void holaMundo() {
+#include <iostream>
+
+__global__ void holaMundo() {
     printf("Hola Mundo desde el GPU!\n");
 }
 
