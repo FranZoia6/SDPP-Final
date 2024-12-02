@@ -19,6 +19,8 @@
 extern "C" {
 #include "md5.cuh"
 }
+#include <time.h>
+
 /****************************** MACROS ******************************/
 #define MD5_BLOCK_SIZE 16               // MD5 outputs a 16 byte digest
 
@@ -248,49 +250,50 @@ void mcm_cuda_md5_hash_batch(BYTE* in, WORD inlen, BYTE* out, WORD n_batch)
 	cudaFree(cuda_outdata);
 }
 }
+
 int main(int argc, char *argv[]) {
-    // Verificar que se hayan pasado dos argumentos
     if (argc < 3) {
-        printf("Uso: %s <mensaje> <cadena> <numero1> <numero2>\n", argv[0]);
+        printf("Uso: %s <mensaje> <cadena>\n", argv[0]);
         return 1;
     }
 
     const char *input_message = argv[1];
     const char *cadena = argv[2];
-    int numero1 = std::atoi(argv[3]);
-    int numero2 = std::atoi(argv[4]);
-    int number = numero1;
-    bool distint = true;
-	bool limit = true;
+    size_t longitud_total = strlen(cadena);
 
-    BYTE out[MD5_BLOCK_SIZE]; 
-    size_t longitud = strlen(cadena);
-
-    while (distint && limit) {
-        char new_message[256];
-        snprintf(new_message, sizeof(new_message), "%d%s", number, input_message);
-
-       
-        size_t inlen = strlen(new_message); 
-        mcm_cuda_md5_hash_batch((BYTE *)new_message, inlen, out, 1);
-
-        
-        if (strncmp((char *)out, cadena, longitud) == 0) {
-            distint = false;  
-        } else {
-            number++; 
-        }
-		if (number>numero2){
-			limit = false;
-		}
+    if (longitud_total < 5) {
+        printf("La cadena debe tener al menos 5 caracteres para realizar todas las pruebas.\n");
+        return 1;
     }
 
-	if (limit){
-		printf("hash '%s'",out);
-		printf("\n");
-    	printf("\nCoincidencia encontrada con el numero: %d\n", number);
-	}else {
-		printf("nCoincidencia no encontrada");
-	}
+    for (size_t longitud_actual = 1; longitud_actual <= 5; longitud_actual++) {
+        int number = 0;
+        bool distint = true;
+        BYTE out[MD5_BLOCK_SIZE]; 
+
+        clock_t start_time = clock();  
+        while (distint) {
+            char new_message[256];
+            snprintf(new_message, sizeof(new_message), "%d%s", number, input_message);
+
+            size_t inlen = strlen(new_message); 
+            mcm_cuda_md5_hash_batch((BYTE *)new_message, inlen, out, 1);
+
+            if (strncmp((char *)out, cadena, longitud_actual) == 0) {
+                distint = false;  
+            } else {
+                number++;
+            }
+        }
+
+        clock_t end_time = clock(); 
+        double time_taken = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+
+        printf("Longitud del prefijo: %zu\n", longitud_actual);
+        printf("Hash encontrado: '%.*s'\n", MD5_BLOCK_SIZE, out);
+        printf("Coincidencia encontrada con el numero: %d\n", number);
+        printf("Tiempo de ejecucion: %.4f segundos\n\n", time_taken);
+    }
+
     return 0;
 }
