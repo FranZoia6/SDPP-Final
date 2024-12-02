@@ -249,20 +249,24 @@ void mcm_cuda_md5_hash_batch(BYTE* in, WORD inlen, BYTE* out, WORD n_batch)
 }
 }
 int main(int argc, char *argv[]) {
+    // Verificar que se hayan pasado dos argumentos
     if (argc < 3) {
-        printf("Uso: %s <mensaje> <cadena>\n", argv[0]);
+        printf("Uso: %s <mensaje> <cadena> <numero1> <numero2>\n", argv[0]);
         return 1;
     }
 
     const char *input_message = argv[1];
     const char *cadena = argv[2];
-    int number = 0;
+    int numero1 = std::atoi(argv[3]);
+    int numero2 = std::atoi(argv[4]);
+    int number = numero1;
     bool distint = true;
+	bool limit = true;
 
     BYTE out[MD5_BLOCK_SIZE]; 
     size_t longitud = strlen(cadena);
 
-    while (distint) {
+    while (distint && limit) {
         char new_message[256];
         snprintf(new_message, sizeof(new_message), "%d%s", number, input_message);
 
@@ -276,11 +280,18 @@ int main(int argc, char *argv[]) {
         } else {
             number++; 
         }
+		if (number>numero2){
+			limit = false;
+		}
     }
 
-	printf("hash '%s'",out);
-    printf("\n");
-    printf("\nCoincidencia encontrada con el numero: %d\n", number);
+	if (limit){
+		printf("hash '%s'",out);
+		printf("\n");
+    	printf("\nCoincidencia encontrada con el numero: %d\n", number);
+	}else {
+		printf("\nCoincidencia no encontrada");
+	}
 
 
     return 0;
