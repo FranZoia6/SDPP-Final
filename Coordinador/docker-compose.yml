@@ -1,0 +1,11 @@
+services:
+  coordinador:
+    image: leoduville5/coordinador:latest
+    ports:
+      - 8090:8080
+    networks:
+      - red_ej2
+
+networks:
+  red_ej2:
+    external: true
