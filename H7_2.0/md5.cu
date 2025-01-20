@@ -270,8 +270,8 @@ int main(int argc, char *argv[]) {
     //     return 1;
     // }
 
-    for (size_t longitud_actual = 1; longitud_actual <= longitud_total; longitud_actual++) {
         int number = 0;
+    for (size_t longitud_actual = 1; longitud_actual <= longitud_total; longitud_actual++) {
         bool distint = true;
         BYTE out[MD5_BLOCK_SIZE]; 
 
