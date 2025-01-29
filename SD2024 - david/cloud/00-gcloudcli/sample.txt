@@ -1,0 +1,39 @@
+Maquina HOST
+Lubuntu (python)
+Virtual Box (Máquinas virtual)
+IP .1
+
+HOST -> VirtualBOX -> VM -> SO -> APPS
+* VM1 
+SO Windows -> tool/apps java
+Disco
+memoria
+cpu
+IP .2
+
+* VM2 
+SO ubuntu  -> tool/apps node
+Disco
+memoria
+cpu
+IP .3
+
+* VM3 
+osx,   -> tool/apps X
+Disco
+memoria
+cpu
+IP .4
+
+telnet vm1 a vm3 -< telenet IP .1:80
+---
+
+Contenedores (Docker)
+HOST -> Docker -> Contenedor (APPS)
+Maquina HOST
+Lubuntu (python)
+CONTENEDOR - tool/apps
+
+Contenedor corra un servidor nodejs
+
+

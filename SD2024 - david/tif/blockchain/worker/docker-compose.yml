@@ -1,0 +1,12 @@
+services:
+  worker:
+    image: leoduville5/worker_gpu_cpu:latest
+    ports:
+      - 8091:8080
+    networks:
+      - red_ej2
+    runtime: nvidia  # Esto indica que Docker debe usar el runtime de NVIDIA
+
+networks:
+  red_ej2:
+    external: true
