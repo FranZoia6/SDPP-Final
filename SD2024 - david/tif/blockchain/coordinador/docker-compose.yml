@@ -1,6 +1,7 @@
 services:
   coordinador:
-    image: leoduville5/coordinador:latest
+    container_name: coordinador
+    image: coordinador:latest
     ports:
       - 8090:8080
     networks:

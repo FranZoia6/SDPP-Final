@@ -109,7 +109,7 @@ def enhanced_hash_gpu_cpu(data):
 
 
 def post_result(data):
-    url = "http://localhost:8080/solved_task"
+    url = "http://coordinador:8080/solved_task"
     try:
         response = requests.post(url, json=data)
         print("Post response:", response.text)
