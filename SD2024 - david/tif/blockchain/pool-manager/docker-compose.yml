@@ -1,0 +1,12 @@
+services:
+  poolmanager:
+    container_name: poolmanager
+    image: poolmanager:latest
+    ports:
+      - 8092:8080
+    networks:
+      - red_ej2
+
+networks:
+  red_ej2:
+    external: true

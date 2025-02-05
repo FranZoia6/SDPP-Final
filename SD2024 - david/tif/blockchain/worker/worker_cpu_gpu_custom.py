@@ -107,6 +107,16 @@ def enhanced_hash_gpu_cpu(data):
     
     return format(int(hash_val), '08x')
 
+def keep_alive():
+    url = "http://poolmanager:8080/keep_alive"
+    print("Iniciando keep_alive...")
+    while True:  # Bucle infinito
+        try:
+            response = requests.post(url)
+            print("Post response:", response.text)
+        except requests.exceptions.RequestException as e:
+            print("Failed to send POST request:", e)
+        time.sleep(10)  # Espera 10 segundos antes de repetir     
 
 def post_result(data):
     url = "http://coordinador:8080/solved_task"
@@ -157,6 +167,11 @@ def main():
         print("Consumption stopped by user.")
         connection.close()
         print("Connection closed.")
+
+# Run the process_packages method in a separate thread
+import threading
+process_packages_thread = threading.Thread(target=keep_alive, daemon=True)
+process_packages_thread.start()
 
 if __name__ == '__main__':
     main()
