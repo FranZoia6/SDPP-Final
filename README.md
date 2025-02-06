@@ -14,7 +14,7 @@ docker compose up --build
 
 ## levantar coordinador
 
-cd .\SD2024 - david\tif\blockchain\coordinador
+cd ".\SD2024 - david\tif\blockchain\coordinador"
 
 docker build -t coordinador:latest .
 
@@ -22,7 +22,7 @@ docker compose up --build
 
 ## levantar worker
 
-cd .\SD2024 - david\tif\blockchain\worker
+cd ".\SD2024 - david\tif\blockchain\worker"
 
 docker build -t worker_gpu_cpu:latest .
 
