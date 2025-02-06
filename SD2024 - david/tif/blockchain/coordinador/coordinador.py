@@ -7,6 +7,17 @@ import random
 import hashlib
 import os
 import sys
+from flask_cors import CORS
+import requests
+import jwt  
+from functools import wraps
+
+AUTH0_DOMAIN ="blockchainsd.us.auth0.com"  
+API_AUDIENCE = "https://blockchainsd.us.auth0.com/api/v2/"
+
+
+
+
 # Get the current script's directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # Get the parent directory
@@ -82,6 +93,7 @@ channel.exchange_declare(exchange='block_challenge', exchange_type='topic', dura
 
 # --- APP side --- 
 app = Flask(__name__)
+CORS(app)
 
 # Endpoint to check the status of the application
 @app.route('/status', methods=['GET'])
@@ -101,8 +113,94 @@ def receive_transaction():
     channel.basic_publish(exchange='', routing_key='transactions', body=json.dumps(data))
     return 'Transaction received and queued in RabbitMQ\n'
 
+# Función para obtener la clave pública de Auth0 y validar el token
+def verify_jwt(token):
+    """Verifica y decodifica el token JWT de Auth0."""
+    try:
+        # Obtener los datos de configuración de Auth0
+        jwks_url = f"https://{AUTH0_DOMAIN}/.well-known/jwks.json"
+        jwks = requests.get(jwks_url).json()
 
-# Method to receive data from worker when task is solved
+        # Extraer la clave pública correcta del JWT
+        unverified_header = jwt.get_unverified_header(token)
+        rsa_key = {}
+        for key in jwks["keys"]:
+            if key["kid"] == unverified_header["kid"]:
+                rsa_key = {
+                    "kty": key["kty"],
+                    "kid": key["kid"],
+                    "use": key["use"],
+                    "n": key["n"],
+                    "e": key["e"],
+                }
+                break
+        if not rsa_key:
+            raise Exception("Clave pública no encontrada.")
+
+        # Verificar el token
+        payload = jwt.decode(
+            token,
+            rsa_key,
+            algorithms=["RS256"],
+            audience=API_AUDIENCE,
+            issuer=f"https://{AUTH0_DOMAIN}/"
+        )
+        return payload  # Devuelve los datos del usuario
+
+    except Exception as e:
+        print(f"Error al verificar el token: {e}")
+        return None
+
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get("Authorization", None)
+        if not auth_header:
+            return jsonify({"error": "No se proporcionó un token"}), 401
+
+        parts = auth_header.split()
+        if parts[0].lower() != "bearer" or len(parts) != 2:
+            return jsonify({"error": "Formato de token inválido"}), 401
+
+        token = parts[1]
+        payload = verify_jwt(token)
+
+        if not payload:
+            return jsonify({"error": "Token inválido o expirado"}), 401
+
+        auth0_user_id = payload["sub"]  
+
+        if auth0_user_id != kwargs.get("user_id"):
+            return jsonify({"error": "No autorizado"}), 403
+
+        return f(*args, **kwargs)
+
+    return decorated
+
+
+@app.route('/balance/<user_id>', methods=['GET'])
+@requires_auth
+def get_balance(user_id):
+    balance = 0
+
+    blocks = redis_utils.redis_client.lrange('blockchain', 0, -1)
+
+    for block in blocks:
+        block_data = json.loads(block)
+
+        for transaction in block_data.get('transactions', []):
+            amount = float(transaction['amount'])
+
+            if transaction['user_to'] == user_id:
+                balance += amount
+            if transaction['user_from'] == user_id:
+                balance -= amount
+
+    return jsonify({'balance': balance})
+
+
+
 @app.route('/solved_task', methods=['POST'])
 def receive_solved_task():
     data = request.get_json()
