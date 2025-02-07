@@ -11,7 +11,9 @@
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.3.0",
-    "frontend": "file:",
+    "@stomp/stompjs": "^7.0.0",
+    "amqplib": "^0.10.5",
+    "buffer": "^6.0.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-toastify": "^11.0.3"

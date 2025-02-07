@@ -157,6 +157,8 @@ def receive_solved_task():
             print ("block exists")
             return jsonify({'message': 'Block already solved by another node. Discarding...'}), 200
         else:
+            # if data['user_id'] != '':
+            #     cargar platita  
             print ("block does not exists, it's time to add to the network")
             print (f"item hash: {data['hash']}" )
             print (f"old blockchain content: {data['blockchain_content']}" )

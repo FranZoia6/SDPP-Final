@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useAuth0 } from "@auth0/auth0-react";
 import { toast } from "react-toastify";
-import { fetchPost } from "../../utils/useFetch";
+import { fetchPost } from "../../tools/useFetch";
 
 const LeftOption = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [user_id, setUser_id] = useState("");
   const [amount, setAmount] = useState("");
-  const { user, getAccessTokenSilently} = useAuth0();
+  const { user, getAccessTokenSilently } = useAuth0();
   const [balance, setBalance] = useState("");
 
   useEffect(() => {
@@ -51,13 +51,7 @@ const LeftOption = () => {
 
   const handleBalance = async () => {
     try {
-      
-      // Obtiene el token Auth0.
-      const token = await getAccessTokenSilently()
-          .then(response => response)
-          .catch(error => {
-              throw error;
-          });
+      const token = await getAccessTokenSilently();
 
       if (!token) {
         console.error("Error: No se pudo obtener el token de acceso.");
