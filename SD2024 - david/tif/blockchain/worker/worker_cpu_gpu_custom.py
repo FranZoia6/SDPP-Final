@@ -75,6 +75,7 @@ import random
 import requests
 import time
 import numpy as np
+import socket
 
 try:
     import cupy as cp
@@ -109,14 +110,17 @@ def enhanced_hash_gpu_cpu(data):
 
 def keep_alive():
     url = "http://poolmanager:8080/keep_alive"
-    print("Iniciando keep_alive...")
+    worker_id = socket.gethostname()  # Usa el nombre del host como identificador único
+
     while True:  # Bucle infinito
         try:
-            response = requests.post(url)
+            data = {"worker_id": worker_id}  # Enviar el worker_id en el body
+            response = requests.post(url, json=data)  # Enviar el JSON en el POST
             print("Post response:", response.text)
         except requests.exceptions.RequestException as e:
             print("Failed to send POST request:", e)
-        time.sleep(10)  # Espera 10 segundos antes de repetir     
+        
+        time.sleep(10)  # Espera 10 segundos antes de repetir
 
 def post_result(data):
     url = "http://coordinador:8080/solved_task"

@@ -31,4 +31,13 @@ class RedisUtils:
             if 'id' in msg and msg['id'] == id:
                 return True
         return False
+    
+    def exists_worker(self, worker_id):
+        """Check if a worker ID exists in Redis."""
+        return self.redis_client.exists(f"workers:{worker_id}") > 0
+
+    def setex(self, key, ttl, value):
+        """Set a key with a TTL (time-to-live)."""
+        return self.redis_client.setex(key, ttl, value)
+
 # The module can be used after import by creating an instance of RedisUtils

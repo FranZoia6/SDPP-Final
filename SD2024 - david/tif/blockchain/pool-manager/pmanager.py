@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import pika
 import os
 import sys
@@ -28,11 +28,30 @@ channel.exchange_declare(exchange='workers_queue', exchange_type='topic', durabl
 # --- APP side --- 
 app = Flask(__name__)
 
-# Endpoint to check the status of the workers
 @app.route('/keep_alive', methods=['POST'])
 def check_status():
-    print("Status Received Worker")
+    data = request.get_json()
+    worker_id = data.get("worker_id")  # Obtener el ID del worker desde el body
+
+    if not worker_id:
+        return jsonify({'error': 'Missing worker_id'}), 400
+
+    # Verificar si el worker ya existe en Redis
+    if redis_utils.exists_worker(worker_id):
+        print(f"Worker {worker_id} refreshed")
+    else:
+        print(f"New worker {worker_id} registered")
+
+    # Guardar o actualizar el worker con TTL de 30s
+    redis_utils.setex(f"workers:{worker_id}", 15, "alive")
+
     return jsonify({'status': 'OK'})
+
+def get_active_workers():
+    """Devuelve una lista de workers activos en Redis."""
+    keys = redis_utils.keys("workers:*")
+    return [key.decode().split(":")[1] for key in keys]  # Extraer solo los IDs
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080,debug=True)
