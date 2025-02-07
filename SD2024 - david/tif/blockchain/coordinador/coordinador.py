@@ -113,74 +113,7 @@ def receive_transaction():
     channel.basic_publish(exchange='', routing_key='transactions', body=json.dumps(data))
     return 'Transaction received and queued in RabbitMQ\n'
 
-# Función para obtener la clave pública de Auth0 y validar el token
-def verify_jwt(token):
-    """Verifica y decodifica el token JWT de Auth0."""
-    try:
-        # Obtener los datos de configuración de Auth0
-        jwks_url = f"https://{AUTH0_DOMAIN}/.well-known/jwks.json"
-        jwks = requests.get(jwks_url).json()
-
-        # Extraer la clave pública correcta del JWT
-        unverified_header = jwt.get_unverified_header(token)
-        rsa_key = {}
-        for key in jwks["keys"]:
-            if key["kid"] == unverified_header["kid"]:
-                rsa_key = {
-                    "kty": key["kty"],
-                    "kid": key["kid"],
-                    "use": key["use"],
-                    "n": key["n"],
-                    "e": key["e"],
-                }
-                break
-        if not rsa_key:
-            raise Exception("Clave pública no encontrada.")
-
-        # Verificar el token
-        payload = jwt.decode(
-            token,
-            rsa_key,
-            algorithms=["RS256"],
-            audience=API_AUDIENCE,
-            issuer=f"https://{AUTH0_DOMAIN}/"
-        )
-        return payload  # Devuelve los datos del usuario
-
-    except Exception as e:
-        print(f"Error al verificar el token: {e}")
-        return None
-
-
-def requires_auth(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        auth_header = request.headers.get("Authorization", None)
-        if not auth_header:
-            return jsonify({"error": "No se proporcionó un token"}), 401
-
-        parts = auth_header.split()
-        if parts[0].lower() != "bearer" or len(parts) != 2:
-            return jsonify({"error": "Formato de token inválido"}), 401
-
-        token = parts[1]
-        payload = verify_jwt(token)
-
-        if not payload:
-            return jsonify({"error": "Token inválido o expirado"}), 401
-
-        auth0_user_id = payload["sub"]  
-
-        if auth0_user_id != kwargs.get("user_id"):
-            return jsonify({"error": "No autorizado"}), 403
-
-        return f(*args, **kwargs)
-
-    return decorated
-
-
 @app.route('/balance/<user_id>', methods=['GET'])
-@requires_auth
 def get_balance(user_id):
     balance = 0
 
