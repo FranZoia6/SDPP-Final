@@ -8,7 +8,7 @@ nvcc -gencode arch=compute_61,code=sm_61 md5.cu -o md5
 
 cd .\SD2024 - david\tif\blockchain\services
 
-docker build -t services:latest .
+docker network create red_ej2
 
 docker compose up --build
 
@@ -25,5 +25,7 @@ docker compose up --build
 cd ".\SD2024 - david\tif\blockchain\worker"
 
 docker build -t worker_gpu_cpu:latest .
+
+Instalar NVIDIA Container Toolkit, para ello véase https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
 
 docker compose up --build
