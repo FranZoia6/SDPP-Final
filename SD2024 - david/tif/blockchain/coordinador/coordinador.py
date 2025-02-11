@@ -78,7 +78,7 @@ def process_packages():
                 print(f"Package with block ID {block_id} sent to the 'blocks' topic exchange")
                   # Increment block ID for the next package
             
-            time.sleep(10)        
+            time.sleep(60)        
 
 # Connect to RabbitMQ server
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbit1', port=5672, credentials=pika.PlainCredentials('rabbitmq', 'rabbitmq')))

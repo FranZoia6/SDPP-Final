@@ -27,3 +27,19 @@ cd ".\SD2024 - david\tif\blockchain\worker"
 docker build -t worker_gpu_cpu:latest .
 
 docker compose up --build
+
+# Levantar servidor
+
+cd .\server
+
+npm install
+
+npm start
+
+# Levantar frontend
+
+cd .\frontend
+
+npm install
+
+npm run dev

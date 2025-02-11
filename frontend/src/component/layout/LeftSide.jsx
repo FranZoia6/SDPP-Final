@@ -1,10 +1,8 @@
-import React from "react";
 import unluCoin from "/unlu.png";
 import { useAuth0 } from "@auth0/auth0-react";
 import { useState, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import LeftOption from "./LeftTable";
-import { toast } from "react-toastify";
 const LeftSide = () => {
   const { user } = useAuth0();
   const [showPopUp, setShowPopUp] = useState(false);

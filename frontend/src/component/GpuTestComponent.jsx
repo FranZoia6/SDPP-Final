@@ -6,9 +6,9 @@ export default function GpuWorker() {
   const runningRef = useRef(false);
   const [ws, setWs] = useState(null);
   const { user } = useAuth0();
+  const workerIdRef = useRef(`worker-${Math.random().toString(36).substring(7)}`); // ID persistente
 
   useEffect(() => {
-    // Conectar al WebSocket del backend
     const websocket = new WebSocket("ws://localhost:8888");
 
     websocket.onopen = () => {
@@ -33,22 +33,26 @@ export default function GpuWorker() {
 
     setWs(websocket);
 
-    return () => websocket.close(); // Cerrar WebSocket al desmontar
+    return () => websocket.close();
   }, []);
 
-  async function runWebGPU() {
-    if (!navigator.gpu) {
-      toast.error("WebGPU no está disponible en este navegador.");
-      return;
-    }
-    const adapter = await navigator.gpu.requestAdapter();
-    if (!adapter) {
-      toast.error("No se pudo obtener un adaptador de GPU.");
-      return;
-    }
-    const device = await adapter.requestDevice();
-    toast.success("Worker GPU activo.");
-  }
+  useEffect(() => {
+    const keepAlive = () => {
+      fetch("http://localhost:8092/keep_alive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ worker_id: workerIdRef.current }), // Usa el mismo worker_id
+      })
+        .then((res) => res.text())
+        .then((text) => console.log("Keep alive response:", text))
+        .catch((err) => console.error("Error en keep_alive:", err));
+    };
+
+    keepAlive(); // Ejecutar inmediatamente
+    const interval = setInterval(keepAlive, 10000); // Cada 10 segundos
+
+    return () => clearInterval(interval); // Limpieza cuando el componente se desmonta
+  }, []);
 
   async function processBlock(data) {
     let found = false;
@@ -78,7 +82,7 @@ export default function GpuWorker() {
     let hashVal = 0;
     for (let i = 0; i < data.length; i++) {
       hashVal = (hashVal * 31 + data.charCodeAt(i)) % 2 ** 32;
-      hashVal ^= ((hashVal << 13) | (hashVal >>> 19)) >>> 0; // Rotación de bits
+      hashVal ^= ((hashVal << 13) | (hashVal >>> 19)) >>> 0;
       hashVal = (hashVal * 17) % 2 ** 32;
       hashVal = ((hashVal << 5) | (hashVal >>> 27)) >>> 0;
     }
@@ -97,7 +101,7 @@ export default function GpuWorker() {
   }
 
   return (
-    <button onClick={runWebGPU} style={{ padding: "10px", fontSize: "16px" }}>
+    <button onClick={() => toast.info("Worker activo")} style={{ padding: "10px", fontSize: "16px" }}>
       Worker GPU
     </button>
   );

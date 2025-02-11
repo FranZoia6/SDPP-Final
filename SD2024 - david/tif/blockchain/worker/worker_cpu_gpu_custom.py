@@ -132,25 +132,33 @@ def post_result(data):
 
 def on_message_received(ch, method, properties, body):
     data = json.loads(body)
-    print(f"Message {data} received")
+    print(f"Received subtask: {data['random_start']} - {data['random_end']}")
    
     found = False
     start_time = time.time()
     
     print("Starting mining process")
     while not found:
-        random_number = str(random.randint(0, data['random_num_max']))
+        random_number = str(random.randint(data['random_start'], data['random_end']))
         combined_data = f"{random_number}{data['base_string_chain']}{data['blockchain_content']}"
         calculated_hash = enhanced_hash_gpu_cpu(combined_data)
+        
         if calculated_hash.startswith(data['prefix']):
             found = True
             processing_time = time.time() - start_time
             
-            data["processing_time"] = processing_time
-            data["hash"] = calculated_hash
-            data["number"] = random_number
+            result_data = {
+                "id": data["id"],
+                "hash": calculated_hash,
+                "number": random_number,
+                "base_string_chain": data['base_string_chain'],
+                "blockchain_content": data['blockchain_content'],
+                "timestamp": processing_time
+            }
             
-            post_result(data)
+            # Enviar resultado a Coordinador
+            post_result(result_data)
+
     ch.basic_ack(delivery_tag=method.delivery_tag)
     print(f"Result found and posted for block ID {data['id']} in {processing_time:.2f} seconds")
 
@@ -159,11 +167,10 @@ def main():
         pika.ConnectionParameters(host='rabbit1', port=5672, credentials=pika.PlainCredentials('rabbitmq', 'rabbitmq'))
     )
     channel = connection.channel()
-    channel.exchange_declare(exchange='block_challenge', exchange_type='topic', durable=True)
-    result = channel.queue_declare('', exclusive=True)
-    queue_name = result.method.queue
-    channel.queue_bind(exchange='block_challenge', queue=queue_name, routing_key='blocks')
-    channel.basic_consume(queue=queue_name, on_message_callback=on_message_received, auto_ack=False)
+    channel.queue_declare(queue='workers_queue', durable=True)
+    # Enlazar la cola al exchange con un binding key (ejemplo: "challenge.#")
+    channel.queue_bind(exchange='workers_queue', queue='workers_queue', routing_key='hash_task')
+    channel.basic_consume(queue='workers_queue', on_message_callback=on_message_received, auto_ack=False)
     print('Waiting for messages. To exit press CTRL+C')
     try:
         channel.start_consuming()

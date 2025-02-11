@@ -39,5 +39,14 @@ class RedisUtils:
     def setex(self, key, ttl, value):
         """Set a key with a TTL (time-to-live)."""
         return self.redis_client.setex(key, ttl, value)
+    
+    def get_active_workers(self):
+        """Devuelve una lista de workers activos en Redis."""
+        try:
+            keys = list(self.redis_client.scan_iter("workers:*"))  # Usamos scan_iter() para mejor rendimiento
+            return len(keys)  # Devolvemos la cantidad de workers activos
+        except Exception as e:
+            print(f"Error obteniendo workers activos de Redis: {e}")
+            return 0  # Retornamos 0 en caso de error
 
 # The module can be used after import by creating an instance of RedisUtils
