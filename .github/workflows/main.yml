@@ -43,7 +43,7 @@ jobs:
 
       # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
       - name: Terraform Init
-        working-directory: SD2024 - david/cloud
+        working-directory: SD2024 - david/cloud/05-gke_cluster/terraform
         run: |
 
           ls -lah
