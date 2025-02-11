@@ -30,7 +30,7 @@ jobs:
       name: ${{ needs.setup-stage.outputs.env-name }}
       # PORT: ${{ secrets.PORT }}
       # CLIENT_ORIGIN_URL: ${{ secrets.CLIENT_ORIGIN_URL }}
-      GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      GOOGLE_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
     
     steps:
       # STEP 0 - Checkout code
@@ -64,7 +64,7 @@ jobs:
            
        
         env:
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
 
       # # STEP 2 - Build JAR based on env vars (taken from secrets) 
       # - name: Run ls command
