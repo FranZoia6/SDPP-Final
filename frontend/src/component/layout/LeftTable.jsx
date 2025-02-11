@@ -28,10 +28,16 @@ const LeftOption = () => {
           },
         }
       );
+    } catch (error) {
+      toast.error("El usuario no existe");
+      return;
+    }
 
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+
+    try {
       const urlPost = "http://localhost:8090/transaction";
 
       const request = {
@@ -45,7 +51,8 @@ const LeftOption = () => {
 
       setShowPopup(false);
     } catch (error) {
-      toast.error("El usuario no existe");
+      toast.error("Error en la transferencia");
+      return;
     }
   };
 
