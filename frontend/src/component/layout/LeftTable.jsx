@@ -51,7 +51,7 @@ const LeftOption = () => {
 
       setShowPopup(false);
     } catch (error) {
-      toast.error("Error en la transferencia ");
+      toast.error("Error en la transferencia");
       return;
     }
   };
