@@ -3,56 +3,19 @@ import { toast } from "react-toastify";
 import { useAuth0 } from "@auth0/auth0-react";
 
 export default function GpuWorker() {
-  const runningRef = useRef(false);
   const [ws, setWs] = useState(null);
   const { user } = useAuth0();
-  const workerIdRef = useRef(`worker-${Math.random().toString(36).substring(7)}`); // ID persistente
+  const workerIdRef = useRef(
+    `worker-${Math.random().toString(36).substring(7)}`
+  );
 
   useEffect(() => {
-    const websocket = new WebSocket("ws://localhost:8888");
-
-    websocket.onopen = () => {
-      toast.success("Conectado al WebSocket");
+    return () => {
+      if (ws) {
+        ws.close();
+      }
     };
-
-    websocket.onmessage = async (event) => {
-      const data = JSON.parse(event.data);
-      toast.info("Mensaje recibido: Procesando...");
-
-      const result = await processBlock(data);
-      sendResult(result);
-    };
-
-    websocket.onerror = (error) => {
-      toast.error("Error en WebSocket: " + error.message);
-    };
-
-    websocket.onclose = () => {
-      toast.warn("Conexión WebSocket cerrada");
-    };
-
-    setWs(websocket);
-
-    return () => websocket.close();
-  }, []);
-
-  useEffect(() => {
-    const keepAlive = () => {
-      fetch("http://localhost:8092/keep_alive", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ worker_id: workerIdRef.current }), // Usa el mismo worker_id
-      })
-        .then((res) => res.text())
-        .then((text) => console.log("Keep alive response:", text))
-        .catch((err) => console.error("Error en keep_alive:", err));
-    };
-
-    keepAlive(); // Ejecutar inmediatamente
-    const interval = setInterval(keepAlive, 10000); // Cada 10 segundos
-
-    return () => clearInterval(interval); // Limpieza cuando el componente se desmonta
-  }, []);
+  }, [ws]);
 
   async function processBlock(data) {
     let found = false;
@@ -100,9 +63,76 @@ export default function GpuWorker() {
       .catch((err) => toast.error("Error enviando resultado: " + err));
   }
 
+  const handleWebSocketOpen = () => {
+    const websocket = new WebSocket("ws://localhost:8888");
+
+    websocket.onopen = () => {
+      toast.success("Conectado al WebSocket");
+      setWs(websocket);
+    };
+
+    websocket.onmessage = async (event) => {
+      const data = JSON.parse(event.data);
+      toast.info("Mensaje recibido: Procesando...");
+
+      const result = await processBlock(data);
+      sendResult(result);
+    };
+
+    websocket.onerror = (error) => {
+      toast.error("Error en WebSocket: " + error.message);
+    };
+
+    websocket.onclose = () => {
+      toast.warn("Conexión WebSocket cerrada");
+      setWs(null);
+    };
+  };
+
+  const handleWebSocketClose = () => {
+    if (ws) {
+      ws.close();
+      setWs(null); 
+    }
+  };
+
+  const sendKeepAlive = () => {
+    if (ws) {
+      fetch("http://localhost:8092/keep_alive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ worker_id: workerIdRef.current }),
+      })
+        .then((res) => res.text())
+        .then((text) => console.log("Keep alive response:", text))
+        .catch((err) => console.error("Error en keep_alive:", err));
+    }
+  };
+
+  const handleButtonClick = () => {
+    if (ws) {
+      handleWebSocketClose();
+    } else {
+      handleWebSocketOpen();
+    }
+  };
+
+  useEffect(() => {
+    if (ws) {
+      const interval = setInterval(() => {
+        sendKeepAlive();
+      }, 10000);
+
+      return () => clearInterval(interval);
+    }
+  }, [ws]);
+
   return (
-    <button onClick={() => toast.info("Worker activo")} style={{ padding: "10px", fontSize: "16px" }}>
-      Worker GPU
+    <button
+      onClick={handleButtonClick}
+      style={{ padding: "10px", fontSize: "16px" }}
+    >
+      {ws ? "Cerrar Conexión WebSocket" : "Abrir Conexión WebSocket"}
     </button>
   );
 }
