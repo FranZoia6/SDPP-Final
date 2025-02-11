@@ -1,5 +1,8 @@
 services:
   poolmanager:
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: poolmanager
     image: poolmanager:latest
     ports:
