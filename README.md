@@ -6,7 +6,7 @@ nvcc -gencode arch=compute_61,code=sm_61 md5.cu -o md5
 
 ## levantar servidios redis y 'rabbitmq
 
-cd .\SD2024 - david\tif\blockchain\services
+cd ".\SD2024 - david\tif\blockchain\services"
 
 docker network create red_ej2
 
@@ -29,19 +29,3 @@ docker build -t worker_gpu_cpu:latest .
 Instalar NVIDIA Container Toolkit, para ello véase https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
 
 docker compose up --build
-
-# Levantar servidor
-
-cd .\server
-
-npm install
-
-npm start
-
-# Levantar frontend
-
-cd .\frontend
-
-npm install
-
-npm run dev

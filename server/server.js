@@ -2,8 +2,8 @@ const amqp = require("amqplib");
 const WebSocket = require("ws");
 
 const RABBITMQ_URL = "amqp://rabbitmq:rabbitmq@localhost:5672";
-const EXCHANGE_NAME = "block_challenge";
-const ROUTING_KEY = "blocks";
+const EXCHANGE_NAME = "workers_queue";
+const ROUTING_KEY = "hash_task";
 
 // Crear servidor WebSocket
 const wss = new WebSocket.Server({ port: 8888 });
@@ -34,7 +34,6 @@ async function start() {
         ch.ack(msg);
       }
     });
-
   } catch (error) {
     console.error("Error conectando a RabbitMQ:", error);
   }

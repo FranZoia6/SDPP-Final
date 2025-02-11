@@ -24,7 +24,10 @@ export default function GpuWorker() {
     let randomNumber = "";
 
     while (!found) {
-      randomNumber = Math.floor(Math.random() * data.random_num_max).toString();
+      randomNumber = (
+        Math.floor(Math.random() * (data.random_end - data.random_start + 1)) +
+        data.random_start
+      ).toString();
       const combinedData = `${randomNumber}${data.base_string_chain}${data.blockchain_content}`;
       hash = enhancedHashGPU(combinedData);
       if (hash.toString().startsWith(data.prefix)) {
@@ -92,7 +95,7 @@ export default function GpuWorker() {
   const handleWebSocketClose = () => {
     if (ws) {
       ws.close();
-      setWs(null); 
+      setWs(null);
     }
   };
 
@@ -132,7 +135,7 @@ export default function GpuWorker() {
       onClick={handleButtonClick}
       style={{ padding: "10px", fontSize: "16px" }}
     >
-      {ws ? "Cerrar Conexión WebSocket" : "Abrir Conexión WebSocket"}
+      {ws ? "Worker end" : "Worker start"}
     </button>
   );
 }
