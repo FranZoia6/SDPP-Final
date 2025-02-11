@@ -30,7 +30,7 @@ jobs:
       name: ${{ needs.setup-stage.outputs.env-name }}
       # PORT: ${{ secrets.PORT }}
       # CLIENT_ORIGIN_URL: ${{ secrets.CLIENT_ORIGIN_URL }}
-      GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+      GOOGLE_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
     
     steps:
       # STEP 0 - Checkout code
@@ -43,7 +43,7 @@ jobs:
 
       # Initialize a new or existing Terraform working directory by creating initial files, loading any remote state, downloading modules, etc.
       - name: Terraform Init
-        working-directory: SDPP-Final/SD2024 - david/cloud
+        working-directory: SD2024 - david/cloud/05-gke_cluster/terraform
         run: |
 
           ls -lah
@@ -53,7 +53,7 @@ jobs:
           terraform init --reconfigure \
           --backend-config bucket=$bucket_name \
           --backend-config prefix=$prefix 
-
+          
           terraform validate 
 
           terraform plan -lock=false
@@ -64,7 +64,7 @@ jobs:
            
        
         env:
-          GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+          GOOGLE_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
 
       # # STEP 2 - Build JAR based on env vars (taken from secrets) 
       # - name: Run ls command
