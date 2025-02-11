@@ -1,5 +1,8 @@
 services:
   worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: worker_gpu_cpu:latest
     ports:
       - 8091:8080

@@ -1,5 +1,8 @@
 services:
   coordinador:
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: coordinador
     image: coordinador:latest
     ports:
