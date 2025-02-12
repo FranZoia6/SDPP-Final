@@ -5,9 +5,7 @@ import { useAuth0 } from "@auth0/auth0-react";
 export default function GpuWorker() {
   const [ws, setWs] = useState(null);
   const { user } = useAuth0();
-  const workerIdRef = useRef(
-    `worker-${Math.random().toString(36).substring(7)}`
-  );
+  const workerIdRef = useRef(`worker-${Math.random().toString(36).substring(7)}`);
 
   useEffect(() => {
     return () => {
@@ -66,6 +64,19 @@ export default function GpuWorker() {
       .catch((err) => toast.error("Error enviando resultado: " + err));
   }
 
+  function sendKeepAlive() {
+    if (ws) {
+      fetch("http://localhost:8092/keep_alive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ worker_id: workerIdRef.current }),
+      })
+        .then((res) => res.text())
+        .then((text) => console.log("Keep alive response:", text))
+        .catch((err) => console.error("Error en keep_alive:", err));
+    }
+  }
+
   const handleWebSocketOpen = () => {
     const websocket = new WebSocket("ws://localhost:8888");
 
@@ -78,6 +89,7 @@ export default function GpuWorker() {
       const data = JSON.parse(event.data);
       toast.info("Mensaje recibido: Procesando...");
 
+      // Procesamos el bloque de datos sin esperar el resultado del keep alive
       const result = await processBlock(data);
       sendResult(result);
     };
@@ -99,19 +111,6 @@ export default function GpuWorker() {
     }
   };
 
-  const sendKeepAlive = () => {
-    if (ws) {
-      fetch("http://localhost:8092/keep_alive", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ worker_id: workerIdRef.current }),
-      })
-        .then((res) => res.text())
-        .then((text) => console.log("Keep alive response:", text))
-        .catch((err) => console.error("Error en keep_alive:", err));
-    }
-  };
-
   const handleButtonClick = () => {
     if (ws) {
       handleWebSocketClose();
@@ -124,11 +123,11 @@ export default function GpuWorker() {
     if (ws) {
       const interval = setInterval(() => {
         sendKeepAlive();
-      }, 10000);
+      }, 10000); // Se manda cada 10 segundos
 
       return () => clearInterval(interval);
     }
-  }, [ws]);
+  }, [ws]); // Este effect se dispara cuando el WebSocket está activo
 
   return (
     <button
