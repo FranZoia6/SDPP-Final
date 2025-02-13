@@ -49,6 +49,8 @@ jobs:
           ls -lah
           bucket_name="bucket-tareas-ej3"
           prefix="gke/state"
+
+          rm -rf terraform.tfstate
           
           terraform init --reconfigure \
           --backend-config bucket=$bucket_name \
