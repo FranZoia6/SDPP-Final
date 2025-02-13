@@ -56,10 +56,10 @@ jobs:
           
           terraform validate 
 
-          terraform plan -lock=false
+          terraform plan
 
-          #terraform destroy -lock=false --auto-approve
-          #terraform apply -lock=false --auto-approve
+          #terraform destroy --auto-approve
+          terraform apply --auto-approve
 
            
        
