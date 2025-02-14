@@ -56,12 +56,10 @@ jobs:
           
           terraform validate
 
-          terraform refresh
-
           terraform plan
 
-          terraform destroy --auto-approve
-          #terraform apply --auto-approve
+          #terraform destroy --auto-approve
+          terraform apply --auto-approve
 
            
        
